@@ -23,20 +23,7 @@ blitline('http://www.source.to/your-image.jpg', [{
       height: 10
     },
     save: 'your-image-resized.jpg' // Shortcut
-}, {
-    name: 'resize_to_fill',
-    params: {
-      width: 40,
-      height: 40
-    },
-    save: { // Blitline default
-      image_identifier: 'new_image_id',
-      s3_destination: {
-        bucket: 'AnotherS3Bucket',
-        key: 'path/to/new/image.jpg',
-      }
-    }
-}]).then(function(response) {
+}, {...}]).then(function(response) {
   console.log(response);
   /*
   {
