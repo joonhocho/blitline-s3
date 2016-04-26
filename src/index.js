@@ -72,7 +72,7 @@ export default (config, jobOptions) => {
     NAME_PREFIX,
   } = config;
 
-  const urlPrefix = `https://${BUCKET}.s3.amazonaws.com/${NAME_PREFIX}`;
+  const uriPrefix = `https://${BUCKET}.s3.amazonaws.com/${NAME_PREFIX}`;
 
   const configFunction = (func) => {
     const {save} = func;
@@ -92,7 +92,7 @@ export default (config, jobOptions) => {
   };
 
   const formatImage = ({image_identifier, meta}) => ({
-    url: urlPrefix + image_identifier,
+    uri: uriPrefix + image_identifier,
     meta,
   });
 
