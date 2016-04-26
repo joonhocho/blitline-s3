@@ -44,17 +44,18 @@ const pollJob = (jobId) =>
       port: 80,
       path: `/listen/${jobId}`,
     }, (res) => {
-      res.on('data', (chunk) => {
+      res.setEncoding('utf8');
+      const chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
+      res.on('end', () => {
         try {
-          const jsonString = chunk.toString('utf8');
-          const data = JSON.parse(jsonString);
+          const data = JSON.parse(chunks.join(''));
           data.results = JSON.parse(data.results);
           resolve(data);
         } catch (e) {
           reject(e);
         }
       });
-      res.on('end', reject);
     }).on('error', reject);
     req.setTimeout(TIMEOUT, reject);
   });
