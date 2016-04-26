@@ -75,30 +75,33 @@ export default (config, jobOptions) => {
 
   const uriPrefix = `https://${BUCKET}.s3.amazonaws.com/${NAME_PREFIX}`;
 
-  const formatFunction = (func, id) => {
-    const {save} = func;
-    if (typeof save === 'string') {
-      return {
-        ...func,
-        save: {
-          image_identifier: id,
-          s3_destination: {
-            bucket: BUCKET,
-            key: NAME_PREFIX + save,
-          },
-        },
-      };
-    }
-    return func;
-  };
-
   return (uri, funcMap, options) => {
     blitline.addJob({
       ...jobOptions,
       application_id: APPLICATION_ID,
       ...options,
       src: uri,
-      functions: Object.keys(funcMap).map((key) => formatFunction(funcMap[key], key)),
+      functions: Object.keys(funcMap).map((key) => {
+        const func = funcMap[key];
+        let {save} = func;
+        if (!save) {
+          const {name, ext} = path.parse(uri);
+          save = `${name}_${key}${ext}`;
+        }
+        if (typeof save === 'string') {
+          return {
+            ...func,
+            save: {
+              image_identifier: key,
+              s3_destination: {
+                bucket: BUCKET,
+                key: NAME_PREFIX + save,
+              },
+            },
+          };
+        }
+        return func;
+      }),
     });
 
     return blitline.postJobs()
