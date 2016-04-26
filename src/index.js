@@ -1,6 +1,7 @@
 /* eslint camelcase: 0 */
 import blitline from 'simple_blitline_node';
 import http from 'http';
+import path from 'path';
 
 const TIMEOUT = 30 * 1000; // 30 seconds
 
@@ -50,8 +51,8 @@ const pollJob = (jobId) =>
       res.on('end', () => {
         try {
           const data = JSON.parse(chunks.join(''));
-          data.results = JSON.parse(data.results);
-          resolve(data);
+          const results = JSON.parse(data.results);
+          resolve(results);
         } catch (e) {
           reject(e);
         }
@@ -74,13 +75,13 @@ export default (config, jobOptions) => {
 
   const uriPrefix = `https://${BUCKET}.s3.amazonaws.com/${NAME_PREFIX}`;
 
-  const configFunction = (func) => {
+  const formatFunction = (func, id) => {
     const {save} = func;
     if (typeof save === 'string') {
       return {
         ...func,
         save: {
-          image_identifier: save,
+          image_identifier: id,
           s3_destination: {
             bucket: BUCKET,
             key: NAME_PREFIX + save,
@@ -91,28 +92,31 @@ export default (config, jobOptions) => {
     return func;
   };
 
-  const formatImage = ({image_identifier, meta}) => ({
-    uri: uriPrefix + image_identifier,
-    meta,
-  });
-
-  const formatPollingResponse = ({results: {job_id, original_meta, images}}) => ({
-    jobId: job_id,
-    originalMeta: original_meta,
-    images: images.map(formatImage),
-  });
-
-  return (src, functions, options) => {
+  return (uri, funcMap, options) => {
     blitline.addJob({
       ...jobOptions,
       application_id: APPLICATION_ID,
       ...options,
-      src,
-      functions: functions.map(configFunction),
+      src: uri,
+      functions: Object.keys(funcMap).map((key) => formatFunction(funcMap[key], key)),
     });
 
     return blitline.postJobs()
       .then(pollFromJobResponse)
-      .then(formatPollingResponse);
+      .then(({job_id, original_meta, images}) => ({
+        jobId: job_id,
+        images: images.reduce((obj, {image_identifier, s3_url, meta}) => {
+          obj[image_identifier] = {
+            uri: uriPrefix + path.basename(s3_url),
+            meta,
+          };
+          return obj;
+        }, {
+          original: {
+            uri,
+            meta: original_meta,
+          },
+        }),
+      }));
   };
 };
