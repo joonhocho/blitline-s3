@@ -64,7 +64,7 @@ const pollFromJobResponse = (response) =>
   pollJob(response.results[0].job_id);
 
 
-export default (config) => {
+export default (config, jobOptions) => {
   const {
     APPLICATION_ID,
     BUCKET,
@@ -101,9 +101,11 @@ export default (config) => {
     images: images.map(formatImage),
   });
 
-  return (src, functions) => {
+  return (src, functions, options) => {
     blitline.addJob({
+      ...jobOptions,
       application_id: APPLICATION_ID,
+      ...options,
       src,
       functions: functions.map(configFunction),
     });
