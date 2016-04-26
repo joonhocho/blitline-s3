@@ -16,29 +16,42 @@ var blitline = require('blitline-s3')({
 });
 
 // Send a job to Blitline
-blitline('http://www.source.to/your-image.jpg', [{
+blitline('http://www.source.to/your-image.jpg', {
+  resize10: {
     name: 'resize',
     params: {
       width: 10,
       height: 10
     },
-    save: 'your-image-resized.jpg' // Shortcut
-}, {...}]).then(function(response) {
+    save: 'your-image-resized-10.jpg'
+  },
+  resize200: {
+    name: 'resize',
+    params: {
+      width: 200,
+      height: 200
+    },
+    save: 'your-image-resized-200.jpg'
+  }
+}, {
+  get_exif: true // job options
+}).then(function(response) {
   console.log(response);
   /*
   {
     jobId: 'blitline_job_id',
-    originalMeta: {
-      width: 100,
-      height: 100
-    },
-    images: [{
-      url: 'http://YourS3Bucket.s3.amazonaws.com/uploads/your-image-resized.jpg',
-      meta: {
-        width: 10,
-        height: 10
-      }
-    }, {...}]
+    images: {
+      original: {
+        uri: 'http://www.source.to/your-image.jpg',
+        meta: {
+          width: 400,
+          height: 300,
+          original_exif: {...}
+        }
+      },
+      resize10: {...},
+      resize200: {...}
+    }
   }
   */
 }, function(error) {
