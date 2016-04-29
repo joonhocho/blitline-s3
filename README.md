@@ -59,9 +59,15 @@ blitline('http://www.source.to/your-image.jpg', {
 });
 ```
 
+
 ### TODO
  - Upload to pre-signed url
  - Postback callback
+
+
+### Dependencies
+ - Calling Blitline API: https://github.com/blitline-dev/simple_blitline_node
+
 
 ### License
 ```
