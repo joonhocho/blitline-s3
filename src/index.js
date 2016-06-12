@@ -67,15 +67,29 @@ const pollFromJobResponse = (response) =>
 
 
 export default (config, jobOptions) => {
-  const {
+  let {
     APPLICATION_ID,
     BUCKET,
     NAME_PREFIX,
   } = config;
 
+  if (!APPLICATION_ID) {
+    throw new Error(`'APPLICATION_ID' must be provided.`);
+  }
+
+  if (!BUCKET) {
+    throw new Error(`'BUCKET' must be provided.`);
+  }
+
+  if (!NAME_PREFIX) NAME_PREFIX = '';
+
   const uriPrefix = `https://${BUCKET}.s3.amazonaws.com/${NAME_PREFIX}`;
 
   return (uri, funcMap, options) => {
+    if (!uri) {
+      throw new Error(`'uri' must be provided.`);
+    }
+
     blitline.addJob({
       ...jobOptions,
       application_id: APPLICATION_ID,
